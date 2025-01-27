@@ -62,7 +62,9 @@ public final class JcaDetectionRules {
                         // algorithm
                         JcaAlgorithmParameterGeneratorGetInstance.rules().stream(),
                         // key agreement
-                        JcaKeyAgreementGetInstance.rules().stream())
+                        JcaKeyAgreementGetInstance.rules().stream(),
+                        // key generation
+                        JcaKeyGeneratorGetInstance.rules().stream())
                 .flatMap(i -> i)
                 .toList();
     }
