@@ -38,7 +38,8 @@ public final class SSLDetectionRules {
                         SSLServerSocketSetEnabledProtocols.rules().stream(),
                         SSLSetParameters.rules().stream(),
                         SSLContext.rules().stream(),
-                        SSLServerSocketSetEnabledCipherSuites.rules().stream())
+                        SSLServerSocketSetEnabledCipherSuites.rules().stream(),
+                        SSLProtocolDetection.rules().stream())
                 .flatMap(i -> i)
                 .toList();
     }

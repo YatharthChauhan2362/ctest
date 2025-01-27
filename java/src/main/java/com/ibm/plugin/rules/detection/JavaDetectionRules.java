@@ -23,6 +23,7 @@ import com.ibm.engine.rule.IDetectionRule;
 import com.ibm.plugin.rules.detection.bc.BouncyCastleDetectionRules;
 import com.ibm.plugin.rules.detection.jca.JcaDetectionRules;
 import com.ibm.plugin.rules.detection.ssl.SSLDetectionRules;
+import com.ibm.plugin.rules.detection.random.SecureRandomGetInstance;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -38,7 +39,8 @@ public final class JavaDetectionRules {
         return Stream.of(
                         JcaDetectionRules.rules().stream(),
                         BouncyCastleDetectionRules.rules().stream(),
-                        SSLDetectionRules.rules().stream())
+                        SSLDetectionRules.rules().stream(),
+                        SecureRandomGetInstance.rules().stream())
                 .flatMap(i -> i)
                 .toList();
     }

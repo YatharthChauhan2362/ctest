@@ -117,12 +117,23 @@ public final class SecureRandomGetInstance {
                     .inBundle(() -> "Random")
                     .withoutDependingDetectionRules();
 
+    private static final IDetectionRule<Tree> SECURE_RANDOM_4 =
+            new DetectionRuleBuilder<Tree>()
+                    .createDetectionRule()
+                    .forObjectTypes("java.security.SecureRandom")
+                    .forMethods("getInstance")
+                    .withMethodParameter("java.lang.String")
+                    .shouldBeDetectedAs(new SeedSizeFactory<>())
+                    .buildForContext(new PRNGContext())
+                    .inBundle(() -> "Random")
+                    .withoutDependingDetectionRules();
+
     private SecureRandomGetInstance() {
         // nothing
     }
 
     @Nonnull
     public static List<IDetectionRule<Tree>> rules() {
-        return List.of(SECURE_RANDOM_1, SECURE_RANDOM_2, SECURE_RANDOM_3);
+        return List.of(SECURE_RANDOM_1, SECURE_RANDOM_2, SECURE_RANDOM_3, SECURE_RANDOM_4);
     }
 }
