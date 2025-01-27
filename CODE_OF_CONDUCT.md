@@ -70,11 +70,11 @@ threatening, offensive, or harmful.
 ## Scope
 
 This Code of Conduct applies both within project spaces and in public
-spaces when an individual is representing the project or its community.
+spaces when an individual is representing the project or its community. 
 Examples of representing a project or community include using an official
-project e-mail address, posting via an official social media account,
-or acting as an appointed representative at an online or offline event.
-Representation of a project may be further defined and clarified
+project e-mail address, posting via an official social media account, 
+or acting as an appointed representative at an online or offline event. 
+Representation of a project may be further defined and clarified 
 by project maintainers.
 
 ## Enforcement
@@ -98,3 +98,4 @@ concerned with a fellow IBMer's behavior should follow IBM's own internal HR
 reporting protocols, which include engaging the offending IBMer's manager and
 involving IBM Concerns and Appeals. IBM employees concerned with an IBM
 business partner's behavior should notify tellibm@us.ibm.com.
+

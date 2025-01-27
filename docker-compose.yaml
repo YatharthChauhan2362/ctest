@@ -1,100 +1,39 @@
-# CBOMkit
-# Copyright (C) 2024 IBM
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 services:
-  backend:
-    image: ghcr.io/ibm/cbomkit:${CBOMKIT_VERSION}
-    environment:
-      CBOMKIT_DB_TYPE: postgresql
-      CBOMKIT_DB_JDBC_URL: jdbc:postgresql://db:5432/postgres
-      CBOMKIT_PORT: 8081
-      CBOMKIT_DB_USERNAME: ${POSTGRESQL_AUTH_USERNAME}
-      CBOMKIT_DB_PASSWORD: ${POSTGRESQL_AUTH_PASSWORD}
-      CBOMKIT_FRONTEND_URL_CORS: "http://localhost:8001"
-#      CBOMKIT_REGULATOR_API_BASE: "http://regulator:8080"
-#      CBOMKIT_QS_EXPLORER_API_BASE: "http://localhost:8000/api/v1/scan"
-    ports:
-      - "8081:8081"
+  sonarqube:
+    image: sonarqube:latest
+    user: "${UID}"
     volumes:
-      - cbomkit-volume:/home/user/.cbomkit
-    restart: always
-    deploy:
-      resources:
-        reservations:
-          memory: 16g
-    profiles:
-      - prod
-      - ext-compliance
-      - dev-frontend
-  frontend:
-    image: ghcr.io/ibm/cbomkit-frontend:${CBOMKIT_VERSION}
-    environment:
-      VUE_APP_HTTP_API_BASE: "http://localhost:8081"
-      VUE_APP_WS_API_BASE: "ws://localhost:8081"
-      VUE_APP_TITLE: "CBOMkit"
-      VUE_APP_VIEWER_ONLY: ${CBOMKIT_VIEWER}
+       - sonar-data:/opt/sonarqube/data
+       - ./.SonarQube/plugins/:/opt/sonarqube/extensions/plugins/
+       - sonar-logs:/opt/sonarqube/logs
+       - ./.SonarQube/conf/:/opt/sonarqube/conf/
     ports:
-      - "8001:8000"
-    restart: always
-    profiles:
-      - prod
-      - ext-compliance
-      - dev-backend
-      - viewer
+      - "9000:9000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    command:
+      - "-Dsonar.es.bootstrap.checks.disable=true"
   db:
-    image: postgres:16-alpine
-    user: postgres
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: ${POSTGRESQL_AUTH_USERNAME}
-      POSTGRES_PASSWORD: ${POSTGRESQL_AUTH_PASSWORD}
-    ports:
-      - "5432:5432"
+    image: postgres:15-alpine
     healthcheck:
-      test: [ "CMD", "pg_isready -U ${POSTGRESQL_AUTH_USERNAME} -d postgres" ]
+      test: [ "CMD-SHELL", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - "pg-volume:/var/lib/postgresql/data/"
-    restart: always
-    profiles:
-      - prod
-      - ext-compliance
-      - dev
-      - dev-backend
-      - dev-frontend
-  regulator:
-    image: ibm-regulator
     environment:
-      OPA_BASE_URL: "http://opa:8181"
-    ports:
-      - "8080:8080"
-    profiles:
-      - ext-compliance
-  opa:
-    image: openpolicyagent/opa:0.66.0
-    command:
-      - "run"
-      - "--addr=0.0.0.0:8181"
-      - "--server"
-    ports:
-      - "8181:8181"
-    profiles:
-      - ext-compliance
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonar-postgresql:/var/lib/postgresql
+      - sonar-postgresql_data:/var/lib/postgresql/data
 volumes:
-  cbomkit-volume:
-  pg-volume:
+  sonar-logs:
+  sonar-data:
+  sonar-postgresql:
+  sonar-postgresql_data:

@@ -1,106 +1,102 @@
-# CBOMkit - The Essentials for CBOMs
+# Sonar Cryptography Plugin (CBOMkit-hyperion)
 
-[![License](https://img.shields.io/github/license/IBM/cbomkit.svg?)](https://opensource.org/licenses/Apache-2.0)
-[![Current Release](https://img.shields.io/github/release/IBM/cbomkit.svg?logo=IBM)](https://github.com/IBM/cbomkit/releases)
+[![License](https://img.shields.io/github/license/IBM/sonar-cryptography.svg?)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
+[![Current Release](https://img.shields.io/github/release/IBM/sonar-cryptography.svg?logo=IBM)](https://github.com/IBM/sonar-cryptography/releases)
 
-CBOMkit is a comprehensive toolset for handling Cryptography Bill of Materials (CBOM). It provides:
 
-- **CBOM Generation**: Generate CBOMs from source code by scanning private and public git repositories to detect cryptographic usage
-- **CBOM Viewer**: Visualize and analyze generated or uploaded CBOMs with detailed statistics
-- **CBOM Compliance Check**: Evaluate CBOMs against specified compliance policies
-- **CBOM Database**: Store and manage CBOMs with a RESTful API
+This repository contains a SonarQube Plugin that detects cryptographic assets 
+in source code and generates [CBOM](https://cyclonedx.org/capabilities/cbom/).
+It is part of **the [CBOMKit](https://github.com/IBM/cbomkit) toolset**.
 
-## Quick Start
+## Version compatibility
 
-### Using Docker Compose
+| Plugin Version  | SonarQube Version              |
+|-----------------|--------------------------------|
+| 1.3.7 and up    | SonarQube 9.9 (LTS) and up     |
+| 1.3.2 and 1.3.6 | SonarQube 9.8 (LTS) up to 10.8 | 
+| 1.2.0 to 1.3.1  | SonarQube 9.8 (LTS) up to 10.4 |      
 
-```bash
-# Clone the repository
-git clone https://github.com/IBM/cbomkit
 
-# Start with Docker
-make production
+## Supported languages and libraries
 
-# Or use Podman instead
-make production ENGINE=podman
-```
+| Language | Cryptographic Library                                                                         | Coverage | 
+|----------|-----------------------------------------------------------------------------------------------|----------|
+| Java     | [JCA](https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html) | 100%     |
+|          | [BouncyCastle](https://github.com/bcgit/bc-java) (*light-weight API*)                         | 100%[^1] |
+| Python   | [pyca/cryptography](https://cryptography.io/en/latest/)                                       | 100%     |
 
-> **Note**: The service will be available at http://localhost:8001
 
-### Using CLI
+[^1]: We only cover the BouncyCastle *light-weight API* according to [this specification](https://javadoc.io/static/org.bouncycastle/bctls-jdk14/1.75/specifications.html)
 
-See [CLI.md](CLI.md) for command-line usage instructions.
+> [!NOTE]
+> The plugin is designed in a modular way so that it can be extended to support additional languages and recognition rules to support more libraries.
+> - To add support for another language or cryptography library, see [*Extending the Sonar Cryptography Plugin to add support for another language or cryptography library*](./docs/LANGUAGE_SUPPORT.md)
+> - If you just want to know more about the syntax for writing new detection rules, see [*Writing new detection rules for the Sonar Cryptography Plugin*](./docs/DETECTION_RULE_STRUCTURE.md)
 
-## Components
+## Installation
 
-### Frontend & CBOMkit-coeus
+> [!NOTE] 
+> To run the plugin, you need a running SonarQube instance with one of the supported 
+> versions. If you don't have one but want to try the plugin, you can use the
+> included Docker Compose to set up a development environment. See 
+> [here](CONTRIBUTING.md#build) for instructions.
 
-The web interface provides:
-- Browse existing CBOMs
-- Generate new CBOMs via scanning
-- Upload & visualize CBOMs
-- Analyze compliance
+Copy the plugin (the JAR file from the [latest releases](https://github.com/IBM/sonar-cryptography/releases))
+to `$SONARQUBE_HOME/extensions/plugins` and restart 
+SonarQube ([more](https://docs.sonarqube.org/latest/setup-and-upgrade/install-a-plugin/)).
 
-For visualization-only usage, deploy CBOMkit-coeus:
+## Using
 
-```bash
-make coeus
-```
+The plugin provides new inventory rules (IBM Cryptography Repository) regarding the use of cryptography for 
+the supported languages.
+If you enable these rules, a source code scan creates a cryptographic inventory by creating a 
+[CBOM](https://cyclonedx.org/capabilities/cbom/) with all cryptographic assets and writing 
+a `cbom.json` to the scan directory.
 
-### API Server
+### Add Cryptography Rules to your Quality Profile
 
-The API server provides:
-- RESTful API for CBOM management
-- WebSocket integration for real-time scan updates
-- Compliance checking capabilities
+This plugin incorporates rules specifically focused on cryptography.
 
-See [OpenAPI specification](openapi.yaml) for full API details.
+> To generate a Cryptography Bill of Materials (CBOM), it is mandatory to activate at 
+> least one of these cryptography-related rules.
 
-### Compliance
+![Activate Rules Crypto Rules](docs/images/rules.png)
 
-CBOMkit includes compliance checking for:
-- Basic quantum-safe verification
-- Extensible policy framework
-- Multiple deployment configurations
+As of the current version, the plugin contains one single rule for creating a cryptographic inventory. 
+Future updates may introduce additional rules to expand functionality.
 
-| Deployment | Compliance Check Method |
-|------------|------------------------|
-| `coeus` | Client-side basic quantum resistance check |
-| `production` | Backend core compliance service |
-| `ext-compliance` | External dedicated compliance service |
+### Scan Source Code
 
-### Scanning Capabilities
+Now you can follow the [SonarQube documentation](https://docs.sonarqube.org/latest/analyzing-source-code/overview/) 
+to start your first scan.
 
-Powered by [CBOMkit-hyperion](https://github.com/IBM/sonar-cryptography), current scanning supports:
+### Visualizing your CBOM
 
-| Language | Library | Coverage |
-|----------|---------|-----------|
-| Java | [JCA](https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html) | 100% |
-| Java | [BouncyCastle](https://github.com/bcgit/bc-java) (light-weight API) | 100% |
-| Python | [pyca/cryptography](https://cryptography.io/en/latest/) | 100% |
+Once you have scanned your source code with the plugin, and obtained a `cbom.json` file, you can use [IBM's CBOM Viewer](https://www.zurich.ibm.com/cbom/) service to know more about it.
+It provides you with general insights about the cryptography used in your source code and its compliance with post-quantum safety.
+It also allows you to explore precisely each cryptography asset and its detailed specification, and displays where it appears in your code.
 
-## Deployment
+## Help and troubleshooting
 
-### Helm Chart
+If you encounter difficulties or unexpected results while installing the plugin with SonarQube, or when trying to scan a repository, please check out our guide [*Testing your configuration and troubleshooting*](docs/TROUBLESHOOTING.md) to run our plugin with step-by-step instructions.
 
-Deploy to Kubernetes:
+## Contribution Guidelines
 
-```bash
-helm install cbomkit \
-  --set common.clusterDomain={CLUSTER_DOMAIN} \
-  --set postgresql.auth.username={POSTGRES_USER} \
-  --set postgresql.auth.password={POSTGRES_PASSWORD} \
-  --set backend.tag=$(curl -s https://api.github.com/repos/IBM/cbomkit/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') \
-  --set frontend.tag=$(curl -s https://api.github.com/repos/IBM/cbomkit/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') \
-  ./chart
-```
+If you'd like to contribute to Sonar Cryptography Plugin, please take a look at our
+[contribution guidelines](CONTRIBUTING.md). By participating, you are expected to uphold our [code of conduct](CODE_OF_CONDUCT.md).
 
-## Contributing
-
-Please read:
-- [Contributing Guidelines](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
+We use [GitHub issues](https://github.com/IBM/sonar-cryptography/issues) for tracking requests and bugs. For questions
+start a discussion using [GitHub Discussions](https://github.com/IBM/sonar-cryptography/discussions).
 
 ## License
 
 [Apache License 2.0](LICENSE.txt)
+
+
+
+
+
+
+
+
+
